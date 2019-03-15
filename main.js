@@ -1,4 +1,4 @@
-var socket = io.connect("http://24.16.255.56:8888",{secure: true});
+var socket = io.connect("http://24.16.255.56:8888");
 window.onload = function () {
 
     var saveButton = document.getElementById("save");
