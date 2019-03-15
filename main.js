@@ -1,106 +1,89 @@
+var socket = io.connect("http://24.16.255.56:8888");
+window.onload = function () {
 
-// GameBoard code below
+    var saveButton = document.getElementById("save");
+    var loadButton = document.getElementById("load");
+
+    saveButton.onclick = function() {
+        saveData();
+    }
+
+    loadButton.onclick = function() {
+        loadData();
+    }
+
+    function saveData() {
+        console.log("Saving");
+
+        var objectsList = [];
+        for (var i = 0; i < game.entities.length; i++) {
+            var ent = game.entities[i];
+            objectsList.push({
+                            player: ent.player,
+                            radius: ent.radius,
+                            colors: ent.colors,
+                            color: ent.color,
+                            gravity: ent.gravity,
+                            gravitySpeed: ent.gravitySpeed,
+                            bounce: ent.bounce,
+                            x: ent.x,
+                            y: ent.y,
+                            velocity: ent.velocity,
+                            speed: ent.speed
+                            });
+        }
+
+        socket.emit("save", {studentname: "Hoi Leung Marcus Cheung", statename: "aState", data: {objects: objectsList}});
+        console.log("Saved");
+    }
+
+    function loadData() {
+        console.log("Loading");
+        socket.emit("load", { studentname: "Hoi Leung Marcus Cheung", statename: "aState" });    
+        console.log("Loaded");
+    }
+
+    socket.on("load", function (data) {
+        
+        game.entities = [];
+        
+        for (var i = 0; i < data.data.objects.length; i++) {
+            var object = data.data.objects[i];
+            
+            var circle = new Circle(game);
+            circle.player = object.player;
+            circle.radius = object.radius;
+            circle.colors = object.colors;
+            circle.color = object.color;
+            circle.gravity = object.gravity;
+            circle.gravitySpeed = object.gravitySpeed;
+            circle.bounce = object.bounce;
+            circle.x = object.x;
+            circle.y = object.y;
+            circle.velocity = object.velocity;
+            circle.speed = object.speed;
+            game.addEntity(circle);            
+        }
+    });
+
+    socket.on("connect", function () {
+        console.log("Socket connected.")
+    });
+    socket.on("disconnect", function () {
+        console.log("Socket disconnected.")
+    });
+    socket.on("reconnect", function () {
+        console.log("Socket reconnected.")
+    });
+
+
+}
 
 function distance(a, b) {
     var difX = a.x - b.x;
     var difY = a.y - b.y;
     return Math.sqrt(difX * difX + difY * difY);
 };
-
-// function Rect(game) {
-//     this.player = 1;
-//     this.width = 20;
-//     this.height = 10;
-//     Entity(this, game, 100, 50);
-//     this.velocity = { x: Math.random() * 100, y: Math.random() * 100 };
-//     var speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
-//     if (speed > maxSpeed) {
-//         var ratio = maxSpeed / speed;
-//         this.velocity.x *= ratio;
-//         this.velocity.y *= ratio;
-//     };
-//
-// }
-//
-// Rect.prototype = new Entity();
-// Rect.prototype.constructor = Rect;
-//
-// Rect.prototype.collideRight = function () {
-//     return this.x + this.radius > 800;
-// };
-// Rect.prototype.collideLeft = function () {
-//     return this.x - this.radius < 0;
-// };
-// Rect.prototype.collideBottom = function () {
-//     return this.y + this.radius > 800;
-// };
-// Rect.prototype.collideTop = function () {
-//     return this.y - this.radius < 0;
-// };
-//
-//
-// Rect.prototype.collide = function (other) {
-//     if(this.x < other.x + this.width && this.x + this.width > other.x
-//         && this.y < other.y + other.height && this.height + this.y > other.y) {
-//
-//         return this;
-//     }
-//
-// };
-//
-//
-// Rect.prototype.update = function () {
-//     Entity.prototype.update.call(this);
-//
-//     this.x += this.velocity.x * this.game.clockTick;
-//     this.y += this.velocity.y * this.game.clockTick;
-//
-//     if (this.collideLeft() || this.collideRight()) {
-//         this.velocity.x = -this.velocity.x;
-//     }
-//     if (this.collideTop() || this.collideBottom()) {
-//         this.velocity.y = -this.velocity.y;
-//     }
-//
-//     for (var i = 0; i < this.game.entities.length; i++) {
-//         var ent = this.game.entities[i];
-//         if (this != ent && this.collide(ent)) {
-//             var temp = this.velocity;
-//             this.velocity = ent.velocity;
-//             ent.velocity = temp;
-//         };
-//     };
-//
-//     for (var i = 0; i < this.game.entities.length; i++) {
-//         var ent = this.game.entities[i];
-//         if (this != ent) {
-//             var dist = distance(this, ent);
-//             var difX = (ent.x - this.x) / dist;
-//             var difY = (ent.y - this.y) / dist;
-//             this.velocity.x += difX / (dist * dist) * acceleration;
-//             this.velocity.y += difY / (dist * dist) * acceleration;
-//
-//             var speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
-//             if (speed > maxSpeed) {
-//                 var ratio = maxSpeed / speed;
-//                 this.velocity.x *= ratio;
-//                 this.velocity.y *= ratio;
-//             };
-//         };
-//     }
-//
-//     this.velocity.x -= (1 - friction) * this.game.clockTick * this.velocity.x;
-//     this.velocity.y -= (1 - friction) * this.game.clockTick * this.velocity.y;
-//
-// }
-//
-// Rect.prototype.draw = function (ctx) {
-//     ctx.beginPath();
-//     ctx.fillStyle = this.colors[this.color];
-//     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-//     ctx.fill();
-//     ctx.closePath();
-// }
 
 function Circle(game) {
     this.player = 1;
@@ -199,22 +182,6 @@ Circle.prototype.update = function () {
 
     for (var i = 0; i < this.game.entities.length; i++) {
         var ent = this.game.entities[i];
-        // if (this != ent) {
-        //
-        //     var dist = distance(this, ent);
-        //     var difX = (ent.x - this.x) / dist;
-        //     var difY = (ent.y - this.y) / dist;
-        //     this.velocity.x += difX / (dist * dist) * acceleration;
-        //     this.velocity.y += difY / (dist * dist) * acceleration;
-        //
-        //     var speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
-        //     if (speed > maxSpeed) {
-        //         var ratio = maxSpeed / speed;
-        //         this.velocity.x *= ratio;
-        //         this.velocity.y *= ratio;
-        //     };
-        // };
-
     }
     this.gravitySpeed += this.gravity;
 
@@ -238,6 +205,7 @@ var maxSpeed = 200;
 // the "main" code begins here
 
 var ASSET_MANAGER = new AssetManager();
+var game = null;
 
 ASSET_MANAGER.queueDownload("./img/960px-Blank_Go_board.png");
 ASSET_MANAGER.queueDownload("./img/black.png");
@@ -251,6 +219,7 @@ ASSET_MANAGER.downloadAll(function () {
     var ctx = canvas.getContext('2d');
 
     var gameEngine = new GameEngine();
+    game = gameEngine;
     var circle = new Circle(gameEngine);
 
     circle.color = 0;
