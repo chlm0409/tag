@@ -214,7 +214,7 @@ ASSET_MANAGER.queueDownload("./img/blue.png");
 
 
 ASSET_MANAGER.downloadAll(function () {
-    console.log("starting up da sheild");
+    console.log("starting up");
     var canvas = document.getElementById('gameWorld');
     var ctx = canvas.getContext('2d');
 
